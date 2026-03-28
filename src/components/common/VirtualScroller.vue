@@ -8,11 +8,11 @@
       :style="{
         height: `${totalSize}px`,
       }"
-      class="relative w-full"
+      class="relative w-full shrink-0"
       v-if="data.length > 0"
     >
       <div
-        class="absolute top-0 left-0 w-full p-3"
+        :class="['scroller-group absolute top-3 right-3 left-3', contentClass]"
         :style="{
           transform: `translateY(${virtualRows[0]?.start ?? 0}px)`,
         }"
@@ -22,7 +22,6 @@
           :key="row.key.toString()"
           :data-index="row.index"
           :ref="(ref) => measureElement(ref as Element | null)"
-          :style="{ marginBottom: marginBottom(row.index) }"
         >
           <slot
             :item="data[row.index]"
@@ -56,13 +55,16 @@ const props = withDefaults(
     data: any[]
     size?: number
     overscan?: number
+    contentClass?: string
   }>(),
   {
     data: () => [],
     size: 64,
     overscan: 24,
+    contentClass: '',
   },
 )
+
 const virutalOptions = computed(() => {
   return {
     count: props.data.length,
@@ -70,6 +72,7 @@ const virutalOptions = computed(() => {
     estimateSize: () => props.size,
     overscan: props.overscan,
     paddingStart: paddingTop.value,
+    paddingEnd: paddingBottom.value + 24,
   }
 })
 
@@ -77,9 +80,6 @@ const rowVirtualizer = useVirtualizer(virutalOptions)
 const virtualRows = computed(() => rowVirtualizer.value.getVirtualItems())
 const totalSize = computed(() => rowVirtualizer.value.getTotalSize())
 
-const marginBottom = (index: number) => {
-  return index === props.data.length - 1 ? `${paddingBottom.value}px` : '12px'
-}
 const measureElement = (el: Element | null) => {
   if (!el) {
     return
